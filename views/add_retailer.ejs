@@ -1,0 +1,21 @@
+<% include partials/_header %>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-body">
+
+                <form action="/load?signed_payload=<%= signed_payload %>" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="retailer_moniker" placeholder="retailer" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        create account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% include partials/_footer %>

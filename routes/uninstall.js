@@ -9,6 +9,7 @@ responseType: 'json'
 router.get('/', (req, next) => {
 try {
 const data = bigCommerce.verify(req.query['signed_payload']);
+//todo uninstall
 console.log(data);
 } catch (err) {
 next(err);
