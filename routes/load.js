@@ -18,7 +18,7 @@ router.get('/', (req, res, next) => {
             req.getConnection((err, conn) => {
                 conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [store_hash], (err, rows) => {
                     console.log(rows);
-                    if (rows && rows.length > 0) {
+                    if (rows && rows.length > 0 && rows[0].retailer_moniker) {
                         res.render('welcome', { name: rows[0].retailer_moniker});
                     } else{
                         res.render('add_retailer', {signed_payload : req.query['signed_payload']});
@@ -38,11 +38,9 @@ router.post('/', (req, res, next) => {
         const data = bigCommerce.verify(req.query['signed_payload']);
         console.log(req.body);
         console.log(data);
-    
-        var bc_retailer = {email : data.owner.email, store_hash: data.store_hash, retailer_moniker: req.body.retailer_moniker};
-        
+
         req.getConnection((err, conn) => {
-            conn.query('INSERT INTO bc_retailer set ?', bc_retailer, (err, bc_retailer_new) => {
+            conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ? WHERE store_hash = ?', [req.body.retailer_moniker, data.owner.email, data.store_hash], (err, bc_retailer_new) => {
                 console.log(bc_retailer_new);
                 res.redirect('/load?signed_payload='+req.query['signed_payload']);
             })

@@ -8,9 +8,14 @@ responseType: 'json'
 
 router.get('/', (req, next) => {
 try {
-const data = bigCommerce.verify(req.query['signed_payload']);
-//todo uninstall
-console.log(data);
+    const data = bigCommerce.verify(req.query['signed_payload']);
+    console.log(data);
+    store_hash = data.store_hash;
+    req.getConnection((err, conn) => {
+        conn.query("DELETE FROM bc_retailer WHERE store_hash = ?", [store_hash]);
+    });
+    //todo uninstall
+   
 } catch (err) {
 next(err);
 }
