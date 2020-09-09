@@ -18,6 +18,9 @@
     "express-myconnection": "^1.0.4",
     "ejs": "^2.6.1",
     "node-bigcommerce": "^4.1.0",
+    "request": "2.81.0",
+    "request-promise": "^4.2.4",
+    "request-promise-native": "^1.0.8",
     "nodemon": "^2.0.4"
   }
 }

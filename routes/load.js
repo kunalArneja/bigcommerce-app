@@ -1,11 +1,13 @@
 const express = require('express'),
 router = express.Router(),
-BigCommerce = require('node-bigcommerce');
+BigCommerce = require('node-bigcommerce'),
+Hub = require('../controllers/hub');;
 
 const bigCommerce = new BigCommerce({
     secret: '60ca6397790bbf08a9ddf701253975c4204c6db79d8daf2e70baf10dae542668',
     responseType: 'json'
 });
+const hub = new Hub();
 
 router.get('/', (req, res, next) => {
     try {
@@ -18,11 +20,7 @@ router.get('/', (req, res, next) => {
             req.getConnection((err, conn) => {
                 conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [store_hash], (err, rows) => {
                     console.log(rows);
-                    if (rows && rows.length > 0 && rows[0].retailer_moniker) {
-                        res.render('welcome', { name: rows[0].retailer_moniker});
-                    } else{
-                        res.render('add_retailer', {signed_payload : req.query['signed_payload']});
-                    }
+                    hub.getAccessToken().then(token => load(token, rows, req, res));
                 })        
             });
         } catch (err) {
@@ -32,6 +30,15 @@ router.get('/', (req, res, next) => {
         next(err);
     }
 });
+
+function load(token, rows, req, res){
+    console.log(token);
+    if (rows && rows.length > 0 && rows[0].retailer_moniker) {
+        res.render('welcome', { name: rows[0].retailer_moniker});
+    } else{
+        res.render('add_retailer', {signed_payload : req.query['signed_payload']});
+    }
+}
 
 router.post('/', (req, res, next) => {
     try {
