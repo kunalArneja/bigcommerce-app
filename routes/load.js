@@ -21,7 +21,8 @@ router.get('/', (req, res, next) => {
                 conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [storeHash], (err, rows) => {
                     console.log(rows);
                     if (rows && rows.length > 0 && rows[0].status == 'INSTALLED') {
-                        res.redirect('https://hubn-qa01.narvar.qa')
+                        res.render('redirect', { cookie: '' })
+
                     } else {
                         res.render('add_retailer', { signed_payload: req.query['signed_payload'] });
                     }
@@ -40,18 +41,26 @@ router.post('/', (req, res, next) => {
         const data = bigCommerce.verify(req.query['signed_payload']);
         console.log(req.body);
         console.log(data);
-        hub.getAccessToken()
-            .then(token => hub.getJsessionId(token)
-                .then(jsessionId => hub.addTenant(data.owner.email, req.body.retailer_moniker, data.store_hash, jsessionId)
-                    .then(jsessionId => hub.saveBigCommerceCredentials(data, data, jsessionId)
-                        .then(
-                            req.getConnection((err, conn) => {
-                                conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, status = ? WHERE store_hash = ?',
-                                    [req.body.retailer_moniker, data.owner.email, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
-                                        console.log(bc_retailer_new);
-                                        res.redirect('/load?signed_payload=' + req.query['signed_payload']);
-                                    })
-                            })))));
+        req.getConnection((err, conn) => {
+            conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [storeHash], (err, rows) => {
+                console.log(rows);
+                if (rows && rows.length > 0) {
+                    hub.getAccessToken()
+                        .then(token => hub.getJsessionId(token)
+                            .then(jsessionId => hub.addTenant(req.body.retailer_moniker, data.store_hash, jsessionId)
+                                .then(jsessionId => hub.saveBigCommerceCredentials(req.body.retailer_moniker, rows[0].access_token, rows[0].store_hash, jsessionId)
+                                    .then(jsessionId => hub.createManagerUser(req.body.first_name, req.body.last_name, req.body.email, req.body.retailer_moniker, jsessionId)
+                                        .then(
+                                            conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, status = ? WHERE store_hash = ?',
+                                                [req.body.retailer_moniker, data.owner.email, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
+                                                    console.log(bc_retailer_new);
+                                                    res.redirect('/load?signed_payload=' + req.query['signed_payload']);
+                                                })
+                                        )))))
+                };
+            })
+        })
+
     } catch (err) {
         next(err);
     }

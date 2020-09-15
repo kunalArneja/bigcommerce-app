@@ -44,7 +44,7 @@ class Hub {
         return sessionId;
     }
 
-    async addTenant(email, retailerName, storeHash, jsessionId) {
+    async addTenant(retailerName, storeHash, jsessionId) {
         const options = {
             method: 'POST',
             url: 'https://hub-qa01.narvar.qa/api/tenants',
@@ -58,7 +58,7 @@ class Hub {
                     admin_information: {
                         first_name: 'bcapp',
                         last_name: 'narvar',
-                        email: email,
+                        email: 'kunal.arneja@narvar.com',
                         create_admin: false
                     },
                     tenant: {
@@ -99,7 +99,7 @@ class Hub {
         return jsessionId;
     }
 
-    async saveBigCommerceCredentials(retailerInfo, accessToken, jsessionId) {
+    async saveBigCommerceCredentials(retailerName, accessToken, storeHash, jsessionId) {
         const options = {
             method: 'POST',
             url: 'https://hub-qa01.narvar.qa/api/toran/v1/graphql',
@@ -112,15 +112,42 @@ class Hub {
                 {
                     operationName: "updateBigCommerceCreds",
                     variables: {
-                        retailer: "ptc",
+                        retailer: retailerName,
                         clientId: "d9nnt8i14fn9werfbrmygr4ttqe0brk",
                         clientSecret: "60ca6397790bbf08a9ddf701253975c4204c6db79d8daf2e70baf10dae542668",
-                        accessToken: "11igldhkuf8eqrk3kpbty2um74uitnm",
-                        storeBaseUrl: "https://api.bigcommerce.com/stores/k6zh5785kz/v3/"
+                        accessToken: accessToken,
+                        storeBaseUrl: "https://api.bigcommerce.com/stores/" + storeHash + "/v3/"
                     },
                     query: "mutation updateBigCommerceCreds($retailer: String!, $clientId: String!, $clientSecret: String!, $accessToken: String, $storeBaseUrl: String!) {\n  updateBigCommerceCreds(authDetails: {retailer: $retailer, clientId: $clientId, clientSecret: $clientSecret, accessToken: $accessToken, storeBaseUrl: $storeBaseUrl}) {\n    statusCode\n    responseMessage\n    __typename\n  }\n}\n"
                 }
             ],
+            json: true
+        };
+        const response = await request(options);
+        console.log(response);
+        return jsessionId;
+    }
+
+    async createManagerUser(firstname, lastName, email, retailer, jsessionId) {
+        const options = {
+            method: 'POST',
+            url: 'https://hubn-qa01.narvar.qa/nub-user',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Cookie': jsessionId
+            },
+            body: {
+                "query": "mutation createUser($retailer: String!, $username: String!, $email: String!, $firstName: String!, $lastName: String!){    createUser(input:{        retailerMoniker: $retailer        username: $username        email: $email        firstName: $firstName        lastName: $lastName        role: MANAGER,        locales: [\"en_US\", \"en_CA\"]       products: [\"Track Beta\"]    }) {        success        message        action    }}",
+                "variables": {
+                    "retailer": retailer,
+                    "username": email,
+                    "email": email,
+                    "firstName": firstname,
+                    "lastName": lastName
+                }
+
+            },
             json: true
         };
         const response = await request(options);
