@@ -22,8 +22,8 @@ router.get('/', (req, res, next) => {
                     console.log(rows);
                     if (rows && rows.length > 0 && rows[0].status == 'INSTALLED') {
                         hub.getAccessToken(rows[0].hub_email, rows[0].hub_password)
-                            .then(token => hub.getJsessionId(token)
-                                .then(jsessionId => res.render('redirect', { cookie: jsessionId })
+                            .then(token => hub.getCookies(token)
+                                .then(cookies => res.render('redirect', { cookie: cookies })
                                 ))
                     } else {
                         res.render('add_retailer', { signed_payload: req.query['signed_payload'] });

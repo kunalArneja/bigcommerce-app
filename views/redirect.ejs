@@ -5,9 +5,12 @@
 </button>
 
 <script type = "text/javascript">
-    var jsessionId = <%- JSON.stringify(cookie) %>;
+    var cookies = <%- JSON.stringify(cookie) %>;
     function NewTab() {
-        document.cookie = jsessionId;
+        cookies.forEach((cookie) => {
+            document.cookie = cookie;
+            console.log(cookie);
+          });
         window.open(
             "https://hub-qa01.narvar.qa", "_blank");
     } 

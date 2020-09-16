@@ -44,6 +44,22 @@ class Hub {
         return sessionId;
     }
 
+    async getCookies(token) {
+        const options = {
+            method: 'GET',
+            url: 'https://hub-qa01.narvar.qa/api/users/signedin',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            resolveWithFullResponse: true
+        };
+        const responseHeaders = await request(options).then(function (response) {
+            return response.headers;
+        });
+        console.log(responseHeaders);
+        return responseHeaders['set-cookie'];
+    }
+
     async addTenant(retailerName, storeHash, jsessionId) {
         const options = {
             method: 'POST',
