@@ -21,8 +21,11 @@ router.get('/', (req, res, next) => {
                 conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [storeHash], (err, rows) => {
                     console.log(rows);
                     if (rows && rows.length > 0 && rows[0].status == 'INSTALLED') {
-                        res.render('redirect', { cookie: '' })
-
+                        hub.getAccessToken(rows[0].hub_email, rows[0].hub_password)
+                            .then(token => hub.getJsessionId(token)
+                                .then(jsessionId => hub.addTenant(req.body.retailer_moniker, data.store_hash, jsessionId)
+                                    .then(res.render('redirect', { cookie: jsessionId }))
+                                ))
                     } else {
                         res.render('add_retailer', { signed_payload: req.query['signed_payload'] });
                     }
@@ -45,16 +48,16 @@ router.post('/', (req, res, next) => {
             conn.query("SELECT * FROM bc_retailer WHERE store_hash = ?", [storeHash], (err, rows) => {
                 console.log(rows);
                 if (rows && rows.length > 0) {
-                    hub.getAccessToken()
+                    hub.getAccessToken('kunal.arneja@narvar.com', 'Hub@2020')
                         .then(token => hub.getJsessionId(token)
                             .then(jsessionId => hub.addTenant(req.body.retailer_moniker, data.store_hash, jsessionId)
-                                .then(hub.saveBigCommerceCredentials(req.body.retailer_moniker, rows[0].access_token, rows[0].store_hash, jsessionId)
-                                    .then(hub.createManagerUser(req.body.first_name, req.body.last_name, req.body.email, req.body.retailer_moniker, jsessionId)
-                                        .then(hub.getUserIdByEmail(req.body.email, token)
+                                .then(response => hub.saveBigCommerceCredentials(req.body.retailer_moniker, rows[0].access_token, rows[0].store_hash, jsessionId)
+                                    .then(response => hub.createManagerUser(req.body.first_name, req.body.last_name, req.body.email, req.body.retailer_moniker, jsessionId)
+                                        .then(response => hub.getUserIdByEmail(req.body.email, token)
                                             .then(userId => hub.setUserPassword(userId, req.body.password, token)
                                                 .then(
-                                                    conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, status = ? WHERE store_hash = ?',
-                                                        [req.body.retailer_moniker, data.owner.email, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
+                                                    conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, hub_email = ?, hub_password = ?, status = ? WHERE store_hash = ?',
+                                                        [req.body.retailer_moniker, data.owner.email, req.body.email, req.body.password, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
                                                             console.log(bc_retailer_new);
                                                             res.redirect('/load?signed_payload=' + req.query['signed_payload']);
                                                         })
@@ -63,6 +66,16 @@ router.post('/', (req, res, next) => {
             })
         })
 
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/hub', (req, res, next) => {
+    try {
+        const jsessionId = req.query['jsession_id'];
+        console.log(jsessionId);
+        res.render('welcome', { name: jsessionId })
     } catch (err) {
         next(err);
     }

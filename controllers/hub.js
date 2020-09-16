@@ -3,15 +3,15 @@
 const request = require('request-promise');
 
 class Hub {
-    async getAccessToken() {
+    async getAccessToken(email, password) {
         const options = {
             method: 'POST',
             url: 'https://id-qa01.narvar.qa/auth/realms/Hub/protocol/openid-connect/token',
             form: {
                 grant_type: 'password',
-                password: 'Hub@2020',
+                password: password,
                 client_id: 'hub-backend',
-                username: 'kunal.arneja@narvar.com'
+                username: email
             }
         };
         const response = await request(options);
@@ -96,6 +96,7 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
+        return response;
     }
 
     async saveBigCommerceCredentials(retailerName, accessToken, storeHash, jsessionId) {
@@ -124,6 +125,7 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
+        return response;
     }
 
     async createManagerUser(firstname, lastName, email, retailer, jsessionId) {
@@ -150,6 +152,7 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
+        return response;
     }
 
     async getUserIdByEmail(email, token) {
@@ -179,7 +182,8 @@ class Hub {
             },
             json: true
         };
-        await request(options);
+        const response = await request(options);
+        return response;
     }
 }
 

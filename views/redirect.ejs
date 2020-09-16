@@ -5,9 +5,10 @@
 </button>
 
 <script type = "text/javascript">
+    var jsessionId = <%= cookie %>
     function NewTab() {
         window.open(
-            "https://hub-qa01.narvar.qa", "_blank");
+            "https://e601acee9299.ngrok.io/load/hub?jsession_id="+jsessionId, "_blank");
     } 
 </script>
 
