@@ -23,8 +23,7 @@ router.get('/', (req, res, next) => {
                     if (rows && rows.length > 0 && rows[0].status == 'INSTALLED') {
                         hub.getAccessToken(rows[0].hub_email, rows[0].hub_password)
                             .then(token => hub.getJsessionId(token)
-                                .then(jsessionId => hub.addTenant(req.body.retailer_moniker, data.store_hash, jsessionId)
-                                    .then(res.render('redirect', { cookie: jsessionId }))
+                                .then(jsessionId => res.render('redirect', { cookie: jsessionId })
                                 ))
                     } else {
                         res.render('add_retailer', { signed_payload: req.query['signed_payload'] });
@@ -66,16 +65,6 @@ router.post('/', (req, res, next) => {
             })
         })
 
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.get('/hub', (req, res, next) => {
-    try {
-        const jsessionId = req.query['jsession_id'];
-        console.log(jsessionId);
-        res.render('welcome', { name: jsessionId })
     } catch (err) {
         next(err);
     }
