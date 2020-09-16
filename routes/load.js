@@ -48,15 +48,17 @@ router.post('/', (req, res, next) => {
                     hub.getAccessToken()
                         .then(token => hub.getJsessionId(token)
                             .then(jsessionId => hub.addTenant(req.body.retailer_moniker, data.store_hash, jsessionId)
-                                .then(jsessionId => hub.saveBigCommerceCredentials(req.body.retailer_moniker, rows[0].access_token, rows[0].store_hash, jsessionId)
-                                    .then(jsessionId => hub.createManagerUser(req.body.first_name, req.body.last_name, req.body.email, req.body.retailer_moniker, jsessionId)
-                                        .then(
-                                            conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, status = ? WHERE store_hash = ?',
-                                                [req.body.retailer_moniker, data.owner.email, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
-                                                    console.log(bc_retailer_new);
-                                                    res.redirect('/load?signed_payload=' + req.query['signed_payload']);
-                                                })
-                                        )))))
+                                .then(hub.saveBigCommerceCredentials(req.body.retailer_moniker, rows[0].access_token, rows[0].store_hash, jsessionId)
+                                    .then(hub.createManagerUser(req.body.first_name, req.body.last_name, req.body.email, req.body.retailer_moniker, jsessionId)
+                                        .then(hub.getUserIdByEmail(req.body.email, token)
+                                            .then(userId => hub.setUserPassword(userId, req.body.password, token)
+                                                .then(
+                                                    conn.query('UPDATE bc_retailer set retailer_moniker = ?, email = ?, status = ? WHERE store_hash = ?',
+                                                        [req.body.retailer_moniker, data.owner.email, 'INSTALLED', data.store_hash], (err, bc_retailer_new) => {
+                                                            console.log(bc_retailer_new);
+                                                            res.redirect('/load?signed_payload=' + req.query['signed_payload']);
+                                                        })
+                                                )))))))
                 };
             })
         })

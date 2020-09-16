@@ -96,7 +96,6 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
-        return jsessionId;
     }
 
     async saveBigCommerceCredentials(retailerName, accessToken, storeHash, jsessionId) {
@@ -125,7 +124,6 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
-        return jsessionId;
     }
 
     async createManagerUser(firstname, lastName, email, retailer, jsessionId) {
@@ -152,7 +150,36 @@ class Hub {
         };
         const response = await request(options);
         console.log(response);
-        return jsessionId;
+    }
+
+    async getUserIdByEmail(email, token) {
+        const options = {
+            method: 'GET',
+            url: 'https://id-qa01.narvar.qa/auth/admin/realms/Hub/users?username=' + email,
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        };
+        const response = await request(options);
+        const info = JSON.parse(response);
+        return info[0].id;
+    }
+
+    async setUserPassword(userId, password, token) {
+        const options = {
+            method: 'PUT',
+            url: 'https://id-qa01.narvar.qa/auth/admin/realms/Hub/users/' + userId + '/reset-password',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            body: {
+                type: "password",
+                temporary: false,
+                value: password
+            },
+            json: true
+        };
+        await request(options);
     }
 }
 
