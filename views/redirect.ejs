@@ -1,0 +1,19 @@
+<% include partials/_header %>
+
+<button onclick="NewTab()">
+    Open Narvar Hub
+</button>
+
+<script type = "text/javascript">
+    var cookies = <%- JSON.stringify(cookie) %>;
+    function NewTab() {
+        cookies.forEach((cookie) => {
+            document.cookie = cookie;
+            console.log(cookie);
+          });
+        window.open(
+            "https://hub-qa01.narvar.qa", "_blank");
+    } 
+</script>
+
+<% include partials/_footer %>
